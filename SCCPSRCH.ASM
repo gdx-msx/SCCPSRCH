@@ -7,7 +7,7 @@
 CR	equ	0Dh
 LF	equ	0Ah
 
-SCCpTbl:	equ	0C000h
+SCCpTbl	equ	0C000h
 
 	org	0100h
 
@@ -17,18 +17,20 @@ TITLE_TXT:
 	db	"SCC+ Cartridges Search v0.9",LF,CR,LF,"$",1ah
 START:
 	ld	de,TITLE_TXT
-	call	PRINT
+	call	PRINT		; Print the title text
 
 	ld	hl,SCCpTbl
-	call	SCCDetect
+	call	SCCDetect	; Make the table for numbers of the slot with SCC inserted
 
 	ld	de,SCC_SLT_TXT
-	call	PRINT
+	call	PRINT		; Print "SCC+ slots: "
 
-	ld	hl,SCCpTbl
-	xor	a
+; Print the table content
+
+	ld	hl,SCCpTbl	; Table address
+	xor	a		; ld a,255 if you prefer 255 as end of table
 	cp	(hl)
-	jp	z,NO_SCC
+	jp	z,NO_SCC	; Jump if end of table
 
 PrintTbl:
 	push	hl
@@ -36,7 +38,7 @@ PrintTbl:
 	and	3
 	add	a,030h
 	ld	e,a
-	ld	c,2	; Print a character (Primary slot number)
+	ld	c,2		; Print a character (Primary slot number)
 	call	BDOS
 
 	pop	hl
@@ -46,18 +48,18 @@ PrintTbl:
 	jr	z,PrimSLT
 	
 	ld	e,"-"
-	ld	c,2	; Print a character
+	ld	c,2		; Print "-"
 	call	BDOS
 
 	pop	hl
 	push	hl
-	ld	a,(hl)	
-	and	0ch
-	rrca
-	rrca
-	add	a,030h
+	ld	a,(hl)		; A = F000SSPP
+	and	0ch		; A = 0000SS00
+	rrca			; A = 00000SS0
+	rrca			; A = 000000SS
+	add	a,030h		; A = "0" + secondary slot number
 	ld	e,a
-	ld	c,2	; Print a character (Secondary slot number)
+	ld	c,2		; Print the secondary slot number
 	call	BDOS
 PrimSLT:
 	pop	hl
@@ -67,8 +69,8 @@ PrimSLT:
 	jr	z,TblEnd	; Jump if 0 (end of the table)
 	push	hl
 
-	ld	e,2ch	; ','
-	ld	c,2	; Print a character (',')
+	ld	e,2ch		; ","
+	ld	c,2		; Print ","
 	call	BDOS
 	pop	hl
 
@@ -76,22 +78,22 @@ PrimSLT:
 
 TblEnd:
 	ld	e,LF
-	ld	c,2	; Print a character
+	ld	c,2		; Print a character
 	call	BDOS
 	ld	e,CR
-	ld	c,2	; Print a character
+	ld	c,2		; Print a character
 	call	BDOS
 
-	rst	0	; Back to the DOS
+	rst	0		; Back to the DOS
 
 NO_SCC:
 
 	ld	de,NOT_FND_TXT
 	call	PRINT
-	rst	0	; Back to the DOS
+	rst	0		; Back to the DOS
 
 PRINT:
-	ld	c,9	; Print a string
+	ld	c,9		; Print a string
 	jp	BDOS
 
 ;------------------------------------------
@@ -158,7 +160,7 @@ ChkCurrentSlt:
 	ex	af,af'		; Store readed byte to A'
 	pop	af		; A = current slot number
 	push	af
-	call	WRSLT		; 	
+	call	WRSLT	
 	pop	af		; A = current slot number
 	push	af
 	call	RDSLT
@@ -227,8 +229,8 @@ ChkCurrentSlt:
 	ld	(hl),a		; Store the slot number in the table
 	inc	hl
 	push	af
-	xor	a
-	ld	(hl),a		; Write 0 to indicate the end of the table
+	xor	a		; ld a,255 if you prefer 255 as end of table
+	ld	(hl),a		; Write the value to indicate the end of the table
 	pop	af
 	scf			; Carry = 1
 	ret
@@ -241,8 +243,8 @@ SCCpNotFnd:
 	pop	bc
 	pop	de
 	pop	hl
-	xor	a
-	ld	(hl),a		; Write 0 to indicate the end of the table
+	xor	a		; ld a,255 if you prefer 255 as end of table
+	ld	(hl),a		; Write the value to indicate the end of the table
 	ex	af,af'
 	or	a		; Carry = 0
 	ret
