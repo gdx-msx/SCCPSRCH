@@ -34,18 +34,18 @@ START:
 
 PrintTbl:
 	push	hl
-	ld	a,(hl)
-	and	3
-	add	a,030h
+	ld	a,(hl)		; A = F000SSPP
+	and	3		; A = 000000PP
+	add	a,030h		; A = "0" + primary slot number
 	ld	e,a
-	ld	c,2		; Print a character (Primary slot number)
+	ld	c,2		; Print the primary slot number
 	call	BDOS
 
 	pop	hl
 	push	hl
-	ld	a,(hl)	
+	ld	a,(hl)
 	and	80h
-	jr	z,PrimSLT
+	jr	z,PrimSLT	; Jumpt if primary slot
 	
 	ld	e,"-"
 	ld	c,2		; Print "-"
